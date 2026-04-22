@@ -34,6 +34,96 @@ sellers = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.SELLERS", conn)
 payments = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDER_PAYMENTS", conn)
 reviews = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDER_REVIEWS", conn)
 category = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.CATEGORY_TRANSLATION", conn)
-
 print("All Bronze tables loaded!")
+
+# ============================================
+# CLIENT A — BUSINESS REQUIREMENTS
+# ============================================
+# Client: Olist Brazilian E-Commerce Platform
+# Goal: Understand business performance across
+# 4 areas — Revenue, Delivery, Customers, Sellers
+# ============================================
+
+# ============================================
+# BLOCK 3 — CLEAN ORDERS TABLE
+# ============================================
+# Serving: Revenue Analysis + Delivery Performance
+# What we do:
+# - Convert timestamps to proper dates
+# - Derive days_to_deliver (delivered - purchased)
+# - Derive year_month for monthly trend analysis
+# - Derive is_late (delivered > estimated date)
+# - Keep only delivered orders
+# ============================================
+
+# ============================================
+# BLOCK 4 — CLEAN CUSTOMERS TABLE
+# ============================================
+# Serving: Customer Behavior
+# What we do:
+# - Keep only customer_id, city, state
+# - Drop zip code (not needed)
+# ============================================
+
+# ============================================
+# BLOCK 5 — CLEAN ORDER ITEMS TABLE
+# ============================================
+# Serving: Revenue Analysis + Seller Performance
+# What we do:
+# - Derive total_item_value = price + freight
+# - Keep order_id, product_id, seller_id, price
+# ============================================
+
+# ============================================
+# BLOCK 6 — CLEAN PRODUCTS + CATEGORY TABLE
+# ============================================
+# Serving: Revenue Analysis
+# What we do:
+# - Join Products with Category Translation
+# - Convert Portuguese → English category names
+# ============================================
+
+# ============================================
+# BLOCK 7 — CLEAN SELLERS TABLE
+# ============================================
+# Serving: Seller Performance
+# What we do:
+# - Keep seller_id, city, state
+# - Drop zip code (not needed)
+# ============================================
+
+# ============================================
+# BLOCK 8 — CLEAN PAYMENTS TABLE
+# ============================================
+# Serving: Customer Behavior
+# What we do:
+# - Group multiple payments per order into one row
+# - Sum payment values per order
+# ============================================
+
+# ============================================
+# BLOCK 9 — BUILD ORDERS_ENRICHED
+# ============================================
+# Serving: All 4 requirements
+# What we do:
+# - Join all cleaned tables into one wide table
+# ============================================
+
+# ============================================
+# BLOCK 10 — BUILD REVIEWS_CLEAN
+# ============================================
+# Serving: AI Layer (Claude API)
+# What we do:
+# - Keep only reviews WITH comments
+# - Ready for sentiment analysis
+# ============================================
+
+# ============================================
+# BLOCK 11 — WRITE TO SNOWFLAKE SILVER
+# ============================================
+# Serving: Gold layer + Tableau dashboard
+# What we do:
+# - Write ORDERS_ENRICHED to Silver
+# - Write REVIEWS_CLEAN to Silver
+# ============================================
 
