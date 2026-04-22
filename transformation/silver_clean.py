@@ -17,3 +17,23 @@ conn = snowflake.connector.connect(
 cursor = conn.cursor()
 
 print("Connected to Snowflake!")
+
+
+# ============================================
+# BLOCK 2 — READ BRONZE TABLES INTO PANDAS
+# As per Client A Business Requirements
+# ============================================
+
+print("Reading Bronze tables...")
+
+orders = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDERS", conn)
+items = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDER_ITEMS", conn)
+customers = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.CUSTOMERS", conn)
+products = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.PRODUCTS", conn)
+sellers = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.SELLERS", conn)
+payments = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDER_PAYMENTS", conn)
+reviews = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.ORDER_REVIEWS", conn)
+category = pd.read_sql("SELECT * FROM ECOMMERCE_AI.BRONZE.CATEGORY_TRANSLATION", conn)
+
+print("All Bronze tables loaded!")
+
