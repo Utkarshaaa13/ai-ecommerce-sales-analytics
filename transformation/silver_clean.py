@@ -120,7 +120,19 @@ print(f"ORDER_ITEMS cleaned: {len(items_clean)} rows")
 # - Join Products with Category Translation
 # - Convert Portuguese → English category names
 # ============================================
+products.columns = products.columns.str.lower()
+category.columns = category.columns.str.lower()
 
+products_clean = products.merge(
+    category,
+    on='product_category_name',
+    how='left'
+)[[
+    'product_id',
+    'product_category_name_english'
+]]
+
+print(f"PRODUCTS cleaned: {len(products_clean)} rows")
 # ============================================
 # BLOCK 7 — CLEAN SELLERS TABLE
 # ============================================
