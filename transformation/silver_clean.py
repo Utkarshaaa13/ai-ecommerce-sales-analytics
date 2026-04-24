@@ -55,7 +55,24 @@ print("All Bronze tables loaded!")
 # - Derive is_late (delivered > estimated date)
 # - Keep only delivered orders
 # ============================================
+orders.columns = orders.columns.str.lower()
 
+orders['order_purchase_timestamp'] = pd.to_datetime(orders['order_purchase_timestamp'])
+orders['order_delivered_customer_date'] = pd.to_datetime(orders['order_delivered_customer_date'])
+orders['order_estimated_delivery_date'] = pd.to_datetime(orders['order_estimated_delivery_date'])
+
+orders['purchase_date'] = orders['order_purchase_timestamp'].dt.date
+orders['year_month'] = orders['order_purchase_timestamp'].dt.to_period('M').astype(str)
+orders['days_to_deliver'] = (orders['order_delivered_customer_date'] - orders['order_purchase_timestamp']).dt.days
+orders['is_late'] = (orders['order_delivered_customer_date'] > orders['order_estimated_delivery_date'])
+
+orders_clean = orders[orders['order_status'] == 'delivered'][[
+    'order_id', 'customer_id', 'order_status',
+    'purchase_date', 'year_month',
+    'days_to_deliver', 'is_late'
+]]
+
+print(f"ORDERS cleaned: {len(orders_clean)} rows")
 # ============================================
 # BLOCK 4 — CLEAN CUSTOMERS TABLE
 # ============================================
