@@ -141,7 +141,15 @@ print(f"PRODUCTS cleaned: {len(products_clean)} rows")
 # - Keep seller_id, city, state
 # - Drop zip code (not needed)
 # ============================================
+sellers.columns = sellers.columns.str.lower()
 
+sellers_clean = sellers[[
+    'seller_id',
+    'seller_city',
+    'seller_state'
+]]
+
+print(f"SELLERS cleaned: {len(sellers_clean)} rows")
 # ============================================
 # BLOCK 8 — CLEAN PAYMENTS TABLE
 # ============================================
