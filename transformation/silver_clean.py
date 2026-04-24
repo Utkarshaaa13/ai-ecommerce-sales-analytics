@@ -158,7 +158,15 @@ print(f"SELLERS cleaned: {len(sellers_clean)} rows")
 # - Group multiple payments per order into one row
 # - Sum payment values per order
 # ============================================
+payments.columns = payments.columns.str.lower()
 
+payments_clean = payments.groupby('order_id').agg(
+    payment_type=('payment_type', 'first'),
+    payment_installments=('payment_installments', 'max'),
+    payment_value=('payment_value', 'sum')
+).reset_index()
+
+print(f"PAYMENTS cleaned: {len(payments_clean)} rows")
 # ============================================
 # BLOCK 9 — BUILD ORDERS_ENRICHED
 # ============================================
