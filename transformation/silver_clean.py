@@ -192,7 +192,16 @@ print(f"ORDERS_ENRICHED shape: {enriched.shape}")
 # - Keep only reviews WITH comments
 # - Ready for sentiment analysis
 # ============================================
+reviews.columns = reviews.columns.str.lower()
 
+reviews['review_creation_date'] = pd.to_datetime(reviews['review_creation_date'])
+
+reviews_clean = reviews[[
+    'review_id', 'order_id', 'review_score',
+    'review_comment_message', 'review_creation_date'
+]].dropna(subset=['review_comment_message'])
+
+print(f"REVIEWS_CLEAN: {len(reviews_clean)} rows")
 # ============================================
 # BLOCK 11 — WRITE TO SNOWFLAKE SILVER
 # ============================================
