@@ -210,4 +210,27 @@ print(f"REVIEWS_CLEAN: {len(reviews_clean)} rows")
 # - Write ORDERS_ENRICHED to Silver
 # - Write REVIEWS_CLEAN to Silver
 # ============================================
+def write_to_silver(df, table_name):
+    print(f"Writing {table_name} to Silver...")
+    cursor.execute(f"DROP TABLE IF EXISTS ECOMMERCE_AI.SILVER.{table_name}")
+    cols = ", ".join([f"{col} VARCHAR" for col in df.columns])
+    cursor.execute(f"CREATE TABLE ECOMMERCE_AI.SILVER.{table_name} ({cols})")
+    for i in range(0, len(df), 1000):
+        batch = df.iloc[i:i+1000]
+        rows = [tuple(row) for row in batch.itertuples(index=False)]
+        placeholders = ", ".join(["%s"] * len(df.columns))
+        cursor.executemany(
+            f"INSERT INTO ECOMMERCE_AI.SILVER.{table_name} VALUES ({placeholders})",
+            rows
+        )
+    print(f"Done! {table_name} written!")
 
+enriched = enriched.fillna('').astype(str)
+reviews_clean = reviews_clean.fillna('').astype(str)
+
+write_to_silver(enriched, "ORDERS_ENRICHED")
+write_to_silver(reviews_clean, "REVIEWS_CLEAN")
+
+cursor.close()
+conn.close()
+print("Silver layer complete!")
