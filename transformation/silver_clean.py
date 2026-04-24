@@ -82,6 +82,16 @@ print(f"ORDERS cleaned: {len(orders_clean)} rows")
 # - Drop zip code (not needed)
 # ============================================
 
+customers.columns = customers.columns.str.lower()
+
+customers_clean = customers[[
+    'customer_id',
+    'customer_city',
+    'customer_state'
+]].drop_duplicates()
+
+print(f"CUSTOMERS cleaned: {len(customers_clean)} rows")
+
 # ============================================
 # BLOCK 5 — CLEAN ORDER ITEMS TABLE
 # ============================================
