@@ -174,7 +174,16 @@ print(f"PAYMENTS cleaned: {len(payments_clean)} rows")
 # What we do:
 # - Join all cleaned tables into one wide table
 # ============================================
+print("Building ORDERS_ENRICHED...")
 
+enriched = orders_clean \
+    .merge(customers_clean, on='customer_id', how='left') \
+    .merge(items_clean, on='order_id', how='left') \
+    .merge(products_clean, on='product_id', how='left') \
+    .merge(sellers_clean, on='seller_id', how='left') \
+    .merge(payments_clean, on='order_id', how='left')
+
+print(f"ORDERS_ENRICHED shape: {enriched.shape}")
 # ============================================
 # BLOCK 10 — BUILD REVIEWS_CLEAN
 # ============================================
