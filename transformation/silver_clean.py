@@ -101,6 +101,17 @@ print(f"CUSTOMERS cleaned: {len(customers_clean)} rows")
 # - Keep order_id, product_id, seller_id, price
 # ============================================
 
+items.columns = items.columns.str.lower()
+
+items['total_item_value'] = items['price'] + items['freight_value']
+
+items_clean = items[[
+    'order_id', 'product_id', 'seller_id',
+    'price', 'freight_value', 'total_item_value'
+]]
+
+print(f"ORDER_ITEMS cleaned: {len(items_clean)} rows")
+
 # ============================================
 # BLOCK 6 — CLEAN PRODUCTS + CATEGORY TABLE
 # ============================================
