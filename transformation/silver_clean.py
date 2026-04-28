@@ -184,6 +184,15 @@ enriched = orders_clean \
     .merge(payments_clean, on='order_id', how='left')
 
 print(f"ORDERS_ENRICHED shape: {enriched.shape}")
+
+# Fix numeric columns
+enriched['days_to_deliver'] = pd.to_numeric(enriched['days_to_deliver'], errors='coerce')
+enriched['price'] = pd.to_numeric(enriched['price'], errors='coerce')
+enriched['freight_value'] = pd.to_numeric(enriched['freight_value'], errors='coerce')
+enriched['total_item_value'] = pd.to_numeric(enriched['total_item_value'], errors='coerce')
+enriched['payment_value'] = pd.to_numeric(enriched['payment_value'], errors='coerce')
+enriched['payment_installments'] = pd.to_numeric(enriched['payment_installments'], errors='coerce')
+enriched['is_late'] = enriched['is_late'].map({'True': True, 'False': False})
 # ============================================
 # BLOCK 10 — BUILD REVIEWS_CLEAN
 # ============================================
@@ -202,6 +211,10 @@ reviews_clean = reviews[[
 ]].dropna(subset=['review_comment_message'])
 
 print(f"REVIEWS_CLEAN: {len(reviews_clean)} rows")
+
+reviews_clean['review_creation_date'] = reviews_clean['review_creation_date'].astype(str)
+reviews_clean['review_score'] = reviews_clean['review_score'].astype(str)
+reviews_clean = reviews_clean.fillna('')
 # ============================================
 # BLOCK 11 — WRITE TO SNOWFLAKE SILVER
 # ============================================
@@ -210,11 +223,55 @@ print(f"REVIEWS_CLEAN: {len(reviews_clean)} rows")
 # - Write ORDERS_ENRICHED to Silver
 # - Write REVIEWS_CLEAN to Silver
 # ============================================
+# ============================================
+# BLOCK 11 — WRITE TO SNOWFLAKE SILVER
+# ============================================
+# Serving: Gold layer + Tableau dashboard
+# What we do:
+# - Fix all NaN values explicitly
+# - Write ORDERS_ENRICHED to Silver
+# - Write REVIEWS_CLEAN to Silver
+# ============================================
+
+# Fix numeric columns
+enriched['is_late'] = enriched['is_late'].fillna(False)
+enriched['days_to_deliver'] = enriched['days_to_deliver'].fillna(0)
+enriched['price'] = enriched['price'].fillna(0)
+enriched['freight_value'] = enriched['freight_value'].fillna(0)
+enriched['total_item_value'] = enriched['total_item_value'].fillna(0)
+enriched['payment_value'] = enriched['payment_value'].fillna(0)
+enriched['payment_installments'] = enriched['payment_installments'].fillna(0)
+
+# Fix string columns
+string_cols = [
+    'order_id', 'customer_id', 'order_status',
+    'purchase_date', 'year_month', 'customer_city',
+    'customer_state', 'product_id', 'seller_id',
+    'product_category_name_english', 'seller_city',
+    'seller_state', 'payment_type'
+]
+for col in string_cols:
+    enriched[col] = enriched[col].fillna('')
+
 def write_to_silver(df, table_name):
     print(f"Writing {table_name} to Silver...")
     cursor.execute(f"DROP TABLE IF EXISTS ECOMMERCE_AI.SILVER.{table_name}")
-    cols = ", ".join([f"{col} VARCHAR" for col in df.columns])
+
+    type_map = {
+        'object': 'VARCHAR',
+        'int64': 'NUMBER',
+        'float64': 'FLOAT',
+        'bool': 'BOOLEAN',
+        'datetime64[ns]': 'TIMESTAMP'
+    }
+
+    cols = ", ".join([
+        f"{col} {type_map.get(str(dtype), 'VARCHAR')}"
+        for col, dtype in zip(df.columns, df.dtypes)
+    ])
+
     cursor.execute(f"CREATE TABLE ECOMMERCE_AI.SILVER.{table_name} ({cols})")
+
     for i in range(0, len(df), 1000):
         batch = df.iloc[i:i+1000]
         rows = [tuple(row) for row in batch.itertuples(index=False)]
@@ -224,9 +281,6 @@ def write_to_silver(df, table_name):
             rows
         )
     print(f"Done! {table_name} written!")
-
-enriched = enriched.fillna('').astype(str)
-reviews_clean = reviews_clean.fillna('').astype(str)
 
 write_to_silver(enriched, "ORDERS_ENRICHED")
 write_to_silver(reviews_clean, "REVIEWS_CLEAN")
